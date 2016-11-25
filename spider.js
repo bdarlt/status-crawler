@@ -241,16 +241,16 @@
       };
   });
   casper.on('resource.received', function(resource) {
-      if (resource.stage == 'end') {
+      if (resource.stage == "end") {
           times[resource.id].time = new Date().getTime() - times[resource.id].start;
           times[resource.id].status =  resource.status;
           dataObj.times.push(times[resource.id]);
           if (visitedUrls.indexOf(resource.url) == -1 && visitedResourceUrls.indexOf(resource.url) == -1) {
               visitedResourceUrls.push(resource.url);
               if(resource.status >= 400) {
-                  casper.echo("* " + this.colorizer.format(resource.status, helpers.statusColor(resource.status)) + ' ' + resource.url);
+                  casper.echo("* " + this.colorizer.format(resource.status, helpers.statusColor(resource.status)) + " " + times[resource.id].time + " " + resource.url);
               } else {
-                  casper.echo("  " + this.colorizer.format(resource.status, helpers.statusColor(resource.status)) + ' ' + resource.url);
+                  casper.echo("  " + this.colorizer.format(resource.status, helpers.statusColor(resource.status)) + " " + times[resource.id].time + " " + resource.url);
               }
           }
       }
