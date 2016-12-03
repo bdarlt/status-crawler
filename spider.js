@@ -11,18 +11,18 @@
 
 
 (function(window,document,undefined){
-  'use strict';
+  "use strict";
 
-  var utils   = require('utils'),
-      helpers = require('./helpers'),
-      fs      = require('fs'),
-      config  = require('./config');
+  var utils   = require("utils"),
+      helpers = require("./helpers"),
+      fs      = require("fs"),
+      config  = require("./config");
 
 
   // ##################  WORKING CODE  #################
 
   // Create Casper
-  var casper = require('casper').create({
+  var casper = require("casper").create({
     verbose: config.verbose,
     logLevel: config.logLevel,
     pageSettings: {
@@ -32,7 +32,7 @@
   });
 
   // Echo options hash to screen
-  if (config.logLevel != 'error') {
+  if (config.logLevel != "error") {
       utils.dump(casper.cli.options);
   }
 
@@ -44,9 +44,9 @@
   var visitedResourceUrls = [];
   
   // required and skipped values
-  var requiredValues = casper.cli.get('required-values') || config.requiredValues,
-      skippedValues = casper.cli.get('skipped-values') || config.skippedValues,
-      linkLimit     = casper.cli.get('limit') || config.limit;
+  var requiredValues = casper.cli.get("required-values") || config.requiredValues,
+      skippedValues = casper.cli.get("skipped-values") || config.skippedValues,
+      linkLimit     = casper.cli.get("limit") || config.limit;
 
 
   // setting hard value for linkLimit so it doesn't go on forever
@@ -58,21 +58,21 @@
   // look for a command line cookie and then for a cookie in the config
   var cookie = false;
 
-  if (typeof casper.cli.get('cookie') === 'string') {
+  if (typeof casper.cli.get("cookie") === "string") {
     try {
       cookie = JSON.parse(cookie);
     } catch (e) {
-      casper.die('User defined cookie is not valid JSON.');
+      casper.die("User defined cookie is not valid JSON.");
     }
-  } else if (casper.cli.get('cookie') === true) {
+  } else if (casper.cli.get("cookie") === true) {
     cookie = config.cookie_data;
   }
 
   // Initializing Data Object
   var dataObj = {
-    start: casper.cli.get('start-url') || config.startUrl,
+    start: casper.cli.get("start-url") || config.startUrl,
     date: new Date(),
-    dateFileName: casper.cli.get('date-file-name') || config.dateFileName,
+    dateFileName: casper.cli.get("date-file-name") || config.dateFileName,
     requiredValues: helpers.prepareArr(requiredValues),
     skippedValues: helpers.prepareArr(skippedValues),
     cookie: cookie,
@@ -81,9 +81,9 @@
     times: [],
     messages: [],
     skippedLinksCount: 0,
-    logFile: '',
+    logFile: "",
     linkCount: 1,
-    userAgent: casper.cli.get('user-agent') || config.userAgent
+    userAgent: casper.cli.get("user-agent") || config.userAgent
   };
 
 
@@ -100,7 +100,7 @@
     }
 
     // add userAgent if supplied
-    if (typeof dataObj.userAgent !== 'undefined') {
+    if (typeof dataObj.userAgent !== "undefined") {
       casper.userAgent(dataObj.userAgent);
     }
 
@@ -114,9 +114,9 @@
 
       // Log url
       if(status >= 400) {
-          this.echo("* " + this.colorizer.format(status, helpers.statusColor(status)) + ' ' + url);
+          this.echo("* " + this.colorizer.format(status, helpers.statusColor(status)) + " " + url);
       } else {
-          this.echo("  " + this.colorizer.format(status, helpers.statusColor(status)) + ' ' + url);
+          this.echo("  " + this.colorizer.format(status, helpers.statusColor(status)) + " " + url);
       }
 
       // Instantiate link object for log
@@ -131,13 +131,13 @@
 
       // ##################  Process Links on Page  #################
 
-      var baseUrl = this.getGlobal('location').origin;
+      var baseUrl = this.getGlobal("location").origin;
 
       // Find links on the current page
       var localLinks = this.evaluate(function() {
         var links = [];
-        __utils__.findAll('a[href]').forEach(function(e) {
-          links.push(e.getAttribute('href'));
+        __utils__.findAll("a[href]").forEach(function(e) {
+          links.push(e.getAttribute("href"));
         });
         return links;
       });
@@ -169,7 +169,7 @@
             // add it to skipped array
             skippedUrls.push(newUrl);
 
-            casper.log('Skipping ' + newUrl, 'debug');
+            casper.log("Skipping " + newUrl, "debug");
 
             // add to counted skipped links
             dataObj.skippedLinksCount++;
@@ -185,7 +185,7 @@
         dataObj.linkCount++;
         spider(nextUrl);
       } else {
-        casper.log('There are no more URLs to be processed!', 'Warning');
+        casper.log("There are no more URLs to be processed!", "Warning");
       }
     }); // eof page function
   }; // eof spider function
@@ -193,54 +193,54 @@
 
   // Start Spidering!
   casper.start(dataObj.start, function() {
-    this.log('Starting to spider ' + dataObj.start, 'info');
+    this.log("Starting to spider " + dataObj.start, "info");
     spider(dataObj.start);
   });
 
   casper.run();
 
   // if console error exists
-  casper.on('page.error', function(msg, trace) {
+  casper.on("page.error", function(msg, trace) {
     var error = {
       msg: msg,
       file: trace[0].file,
       line: trace[0].line,
-      func: trace[0]['function']
+      func: trace[0]["function"]
     };
 
-    this.echo('* ERROR: ' + error.msg, 'error');
-    this.echo('    file: ' + error.file, 'warning');
-    this.echo('    line: ' + error.line, 'warning');
-    this.echo('    function: ' + error.func, 'warning');
+    this.echo("* ERROR: " + error.msg, "error");
+    this.echo("    file: " + error.file, "warning");
+    this.echo("    line: " + error.line, "warning");
+    this.echo("    function: " + error.func, "warning");
 
     dataObj.errors.push(error);
   });
 
   // if console message exists
-  casper.on('remote.message', function(msg) {
-    this.log('MESSAGE: ' + msg, 'WARNING');
+  casper.on("remote.message", function(msg) {
+    this.log("MESSAGE: " + msg, "WARNING");
     var message = {
-      url: casper.getGlobal('location').href,
+      url: casper.getGlobal("location").href,
       msg: msg
     };
     dataObj.messages.push(message);
   });
 
   // stop crawl if there's an internal error
-  casper.on('error', function(msg, backtrace) {
-    this.log('INTERNAL ERROR: ' + msg, 'ERROR' );
-    this.log('BACKTRACE:' + backtrace, 'WARNING');
-    this.die('Crawl stopped because of errors.');
+  casper.on("error", function(msg, backtrace) {
+    this.log("INTERNAL ERROR: " + msg, "ERROR" );
+    this.log("BACKTRACE:" + backtrace, "WARNING");
+    this.die("Crawl stopped because of errors.");
   });
   
   // Find the longuest request
-  casper.on('resource.requested', function(resource) {
+  casper.on("resource.requested", function(resource) {
       times[resource.id] = {
           start: new Date().getTime(),
           url: resource.url
       };
   });
-  casper.on('resource.received', function(resource) {
+  casper.on("resource.received", function(resource) {
       if (resource.stage == "end") {
           times[resource.id].time = new Date().getTime() - times[resource.id].start;
           times[resource.id].status =  resource.status;
@@ -257,15 +257,15 @@
   });
 
   // after crawl is complete, write json file with results
-  casper.on('run.complete', function() {
-    var fileLocation = casper.cli.get('file-location') || config.fileLocation;
+  casper.on("run.complete", function() {
+    var fileLocation = casper.cli.get("file-location") || config.fileLocation;
     var filename;
 
     // set filename for logging
     if (dataObj.dateFileName) {
-      filename = helpers.getFilename(fileLocation) + '-data.json';
+      filename = helpers.getFilename(fileLocation) + "-data.json";
     } else {
-      filename = fileLocation + 'data.json';
+      filename = fileLocation + "data.json";
     }
 
     dataObj.logFile = filename;
@@ -273,9 +273,9 @@
     var data = JSON.stringify(dataObj, undefined, 2);
 
     // write json file
-    fs.write(filename, data, 'w');
+    fs.write(filename, data, "w");
 
-    if (typeof config.cb === 'function') {
+    if (typeof config.cb === "function") {
       config.cb(data);
     }
     
@@ -283,12 +283,12 @@
     var longest = times.sort(function(reqa, reqb) {
         return reqb.time - reqa.time;
     })[0];
-    this.echo('', 'INFO');
-    this.echo(utils.format('Longest request: %s (%s) with %dms', longest.url, longest.status, longest.time), 'INFO');
-    this.echo('', 'INFO');
+    this.echo("", "INFO");
+    this.echo(utils.format("Longest request: %s (%s) with %dms", longest.url, longest.status, longest.time), "INFO");
+    this.echo("", "INFO");
     
-    this.echo('Crawl has completed!', 'INFO');
-    this.echo('Data file can be found at ' + filename + '.', 'INFO');
+    this.echo("Crawl has completed!", "INFO");
+    this.echo("Data file can be found at " + filename + ".", "INFO");
   });
 
 })(this, this.document);
